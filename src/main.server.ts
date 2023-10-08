@@ -6,6 +6,8 @@ import { renderApplication } from "@angular/platform-server";
 
 import { AppComponent } from "./app/app.component";
 import { config } from "./app/app.config.server";
+import { Hono } from "hono";
+import { apiApp } from "../functions";
 
 interface Env {
 	ASSETS: { fetch: typeof fetch };
@@ -20,6 +22,11 @@ interface Env {
 ) {
 	const url = new URL(request.url);
 	console.log("render SSR", url.href);
+
+  if (url.pathname.startsWith("/api")) {
+    const app = new Hono({ strict: false }).route("/api", apiApp);
+    return await app.fetch(request, env);
+  }
 
 	// Get the root `index.html` content.
 	const indexUrl = new URL("/", url);
